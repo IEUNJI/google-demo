@@ -5,24 +5,19 @@ class OnlinePage {
     this.flag = document.querySelector('#flag');
   }
 
-  onlineHandler(status) {
-    this.flag.innerHTML = status;
+  onlineHandler = () => {
+    this.flag.innerHTML = navigator.onLine ? 'online' : 'offline';
   }
 
-  bindEvents() {
-    window.addEventListener('online', () => {
-      this.onlineHandler('online');
-    });
-
-    window.addEventListener('offline', () => {
-      this.onlineHandler('offline');
-    });
+  bindEvents = () => {
+    window.addEventListener('online', this.onlineHandler);
+    window.addEventListener('offline', this.onlineHandler);
   }
 
-  init() {
+  init = () => {
     openConsole();
+    this.onlineHandler();
     this.bindEvents();
-    this.onlineHandler(navigator.onLine ? 'online' : 'offline');
   }
 }
 

@@ -5,11 +5,11 @@ class IndexPage {
     this.goBtns = document.querySelectorAll('#go-btns > button');
   }
 
-  goHandler(btn) {
+  goHandler = btn => {
     location.assign(`html/${btn.name}.html${location.search}`);
   }
 
-  bindEvents() {
+  bindEvents = () => {
     this.goBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         this.goHandler(btn);
@@ -17,7 +17,7 @@ class IndexPage {
     });
   }
 
-  init() {
+  init = () => {
     openConsole();
     this.bindEvents();
   }
