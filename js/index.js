@@ -6,7 +6,7 @@ class IndexPage {
   }
 
   goHandler(btn) {
-    location.assign(`/html/${btn.name}.html${location.search}`);
+    location.assign(`html/${btn.name}.html${location.search}`);
   }
 
   bindEvents() {
