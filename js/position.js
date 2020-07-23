@@ -13,6 +13,7 @@ class PositionPage {
   }
 
   bindEvents = () => {
+    navigator.geolocation.getCurrentPosition(this.positionHandler);
     navigator.geolocation.watchPosition(this.positionHandler);
   }
 
