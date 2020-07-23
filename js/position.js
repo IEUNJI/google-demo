@@ -7,8 +7,8 @@ class PositionPage {
 
   positionHandler = position => {
     const { coords } = position;
-    const { longitude, latitude, accuracy } = coords;
-    const log = `<p>经度：${longitude} 纬度：${latitude} 精度：${accuracy}m</p>`;
+    const { longitude, latitude } = coords;
+    const log = `<p>经度：${longitude}，纬度：${latitude}。</p>`;
     this.logs.insertAdjacentHTML('afterbegin', log);
   }
 
