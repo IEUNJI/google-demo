@@ -6,13 +6,13 @@ class PositionPage {
   }
 
   positionHandler = position => {
-    const { coords, timestamp } = position;
-    const { latitude, longitude, altitude, accuracy, altitudeAccuracy, heading, speed } = coords;
-    console.log(timestamp, latitude, longitude, altitude, accuracy, altitudeAccuracy, heading, speed);
+    const { coords } = position;
+    const { longitude, latitude, accuracy } = coords;
+    const log = `<p>经度：${longitude} 纬度：${latitude} 精度：${accuracy}m</p>`;
+    this.logs.insertAdjacentHTML('afterbegin', log);
   }
 
   bindEvents = () => {
-    navigator.geolocation.getCurrentPosition(this.positionHandler);
     navigator.geolocation.watchPosition(this.positionHandler);
   }
 
