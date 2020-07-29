@@ -8,7 +8,7 @@ class BatteryPage {
 
   batteryHandler = battery => {
     this.charging.innerHTML = `${battery.charging ? '充电中' : '未充电'}`;
-    this.level.innerHTML = `${Number(battery.level.toFixed(2)) * 100}%`;
+    this.level.innerHTML = `${(battery.level * 100).toFixed(2)}%`;
   }
 
   bindEvents = async () => {
