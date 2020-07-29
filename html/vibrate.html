@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vibrate</title>
+</head>
+
+<body>
+  <div>
+    <span id="time-tag">500</span>
+    <span>ms</span>
+  </div>
+  <input type="range" id="time-input" min="100" max="1000" value="500" list="tickmarks">
+
+  <datalist id="tickmarks">
+    <option value="100"></option>
+    <option value="200"></option>
+    <option value="300"></option>
+    <option value="400"></option>
+    <option value="500"></option>
+    <option value="600"></option>
+    <option value="700"></option>
+    <option value="800"></option>
+    <option value="900"></option>
+    <option value="1000"></option>
+  </datalist>
+
+  <button id="vibrate-btn">vibrate</button>
+
+  <script type="module" src="../js/vibrate.js"></script>
+</body>
+
+</html>
