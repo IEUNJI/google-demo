@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explorer</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css">
+  <style>
+    html {
+      overflow-y: auto;
+    }
+
+    .app-title {
+      font-size: x-large;
+      user-select: none;
+    }
+
+    .app-tips {
+      font-size: 0.875rem;
+      text-align: center;
+    }
+
+    .app-main-container {
+      height: 100%;
+    }
+
+    object {
+      width: 100%;
+      height: 100%;
+    }
+
+    .app-footer {
+      font-size: medium;
+    }
+
+    .app-footer span {
+      padding-right: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <v-app>
+      <v-app-bar app dark clipped-left color="indigo">
+        <v-toolbar-title>
+          <h1 class="app-title">Explorer</h1>
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+      </v-app-bar>
+      <v-navigation-drawer app dark clipped permanent width="400px" color="grey lighten-5">
+        <v-container v-if="!treeVisible" fluid>
+          <p class="app-tips">尚未打开文件夹</p>
+          <v-btn dark block tile outlined color="indigo" :loading="btnLoading" @click="btnClickHandler">打开文件夹</v-btn>
+        </v-container>
+        <v-treeview v-else light dense hoverable activatable open-on-click transition return-object color="indigo"
+          :items="treeItems" :load-children="treeLoadHandler" @update:active="treeSelectHandler">
+          <template v-slot:prepend="{ item, open }">
+            <v-icon v-if="!item.type">
+              {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
+            </v-icon>
+            <v-icon v-else>
+              {{ fileTypeEnum[item.type] }}
+            </v-icon>
+          </template>
+        </v-treeview>
+      </v-navigation-drawer>
+      <v-main>
+        <v-container fluid class="app-main-container">
+          <object :data="objectURL" :type="objectType"></object>
+        </v-container>
+      </v-main>
+      <v-footer app dark color="indigo" height="42px">
+        <v-toolbar-title>
+          <span class="app-footer">
+            <span v-show="fileName">名称：{{ fileName }}</span>
+            <span v-show="fileSize">大小：{{ fileSize }}</span>
+            <span v-show="fileLastModifiedDate">修改日期：{{ fileLastModifiedDate }}</span>
+            <span v-show="filePath">位置：{{ filePath }}</span>
+          </span>
+        </v-toolbar-title>
+      </v-footer>
+    </v-app>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+      data: {
+        rootHandle: null,
+        treeVisible: false,
+        btnLoading: false,
+        treeItems: [],
+        fileTypeEnum: {
+          'file': 'mdi-file-outline',
+          'document': 'mdi-file-document-outline',
+          'word': 'mdi-file-word-outline',
+          'powerpoint': 'mdi-file-powerpoint-outline',
+          'excel': 'mdi-file-excel-outline',
+          'pdf': 'mdi-file-pdf',
+          'zip': 'mdi-folder-zip-outline',
+
+          'html': 'mdi-language-html5',
+          'xml': 'mdi-xml',
+          'css': 'mdi-language-css3',
+          'sass': 'mdi-sass',
+          'js': 'mdi-nodejs',
+          'ts': 'mdi-language-typescript',
+          'react': 'mdi-react',
+          'vue': 'mdi-vuejs',
+          'java': 'mdi-language-java',
+          'python': 'mdi-language-python',
+
+          'json': 'mdi-json',
+          'md': 'mdi-markdown',
+          'npm': 'mdi-npm',
+          'webpack': 'mdi-webpack',
+          'babel': 'mdi-babel',
+          'git': 'mdi-git',
+          'eslint': 'mdi-eslint',
+
+          'png': 'mdi-file-image',
+          'gif': 'mdi-gif',
+          'font': 'mdi-format-text-variant',
+          'video': 'mdi-file-video-outline',
+        },
+        objectURL: '',
+        objectType: '',
+        fileName: '',
+        fileSize: '',
+        fileLastModifiedDate: '',
+        filePath: ''
+      },
+      methods: {
+        btnClickHandler() {
+          this.btnLoading = true;
+          showDirectoryPicker()
+            .then(handle => {
+              this.rootHandle = handle;
+              this.treeItems.push({
+                id: Math.random(),
+                name: handle.name,
+                children: [],
+                handle
+              });
+              this.treeVisible = true;
+            })
+            .catch(() => {
+
+            })
+            .finally(() => {
+              this.btnLoading = false;
+            });
+        },
+        treeLoadHandler(item) {
+          return new Promise(async (resolve, reject) => {
+            for await (const handle of item.handle.values()) {
+              const child = {
+                id: Math.random(),
+                name: handle.name,
+                handle
+              };
+              if (handle.kind === 'directory') {
+                child.children = [];
+              } else {
+                child.type = this.getFileType(handle.name);
+              }
+              item.children.push(child);
+            }
+            resolve();
+          });
+        },
+        getFileType(name) {
+          let type = 'file';
+          if (!name.includes('.')) return type;
+          name = name.toLowerCase();
+          const extName = name.split('.').pop();
+          switch (extName) {
+            case 'txt':
+              type = 'document';
+              break;
+            case 'doc':
+            case 'docx':
+              type = 'word';
+              break;
+            case 'ppt':
+            case 'pptx':
+              type = 'powerpoint';
+              break;
+            case 'xls':
+            case 'xlsx':
+              type = 'excel';
+              break;
+            case 'pdf':
+            case 'ofd':
+              type = 'pdf';
+              break;
+            case 'zip':
+            case 'rar':
+            case 'gz':
+              type = 'zip';
+              break;
+
+            case 'html':
+            case 'ejs':
+              type = 'html';
+              break;
+            case 'xml':
+            case 'iml':
+              type = 'xml';
+              break;
+            case 'css':
+            case 'less':
+              type = 'css';
+              break;
+            case 'scss':
+              type = 'sass';
+              break;
+            case 'js':
+              type = 'js';
+              break;
+            case 'ts':
+              type = 'ts';
+              break;
+            case 'jsx':
+            case 'tsx':
+              type = 'react';
+              break;
+            case 'vue':
+              type = 'vue';
+              break;
+            case 'java':
+            case 'jar':
+              type = 'java';
+              break;
+            case 'py':
+              type = 'python';
+              break;
+
+            case 'json':
+              type = 'json';
+              break;
+            case 'md':
+              type = 'md';
+              break;
+
+            case 'png':
+            case 'jpg':
+            case 'jpeg':
+            case 'svg':
+            case 'ico':
+              type = 'png';
+              break;
+            case 'gif':
+              type = 'gif';
+              break;
+            case 'ttf':
+            case 'otf':
+            case 'eot':
+            case 'woff':
+            case 'woff2':
+              type = 'font';
+              break;
+            case 'swf':
+              type = 'video';
+              break;
+          }
+          if (name.includes('webpack') && name.includes('config')) {
+            type = 'webpack';
+          } else if (name.includes('eslint')) {
+            type = 'eslint';
+          }
+          switch (name) {
+            case 'package.json':
+            case 'package-lock.json':
+              type = 'npm';
+              break;
+            case '.babelrc':
+              type = 'babel';
+              break;
+            case '.gitignore':
+              type = 'git';
+              break;
+          }
+          return type;
+        },
+        async treeSelectHandler(selectedItems) {
+          this.cleanObjectCache();
+          const firstItem = selectedItems[0];
+          if (!firstItem) return;
+          const { handle } = firstItem;
+          const file = await handle.getFile();
+          const filePathArr = await this.rootHandle.resolve(handle);
+          const { type, name, size, lastModifiedDate } = file;
+          this.objectURL = URL.createObjectURL(file);
+          this.objectType = type;
+          this.fileName = name;
+          this.fileSize = this.getFileSize(size);
+          this.fileLastModifiedDate = lastModifiedDate.toLocaleString();
+          this.filePath = `${this.rootHandle.name}/${filePathArr.join('/')}`;
+        },
+        cleanObjectCache() {
+          URL.revokeObjectURL(this.objectURL);
+          this.objectURL = '';
+          this.objectType = '';
+          this.fileName = '';
+          this.fileSize = '';
+          this.fileLastModifiedDate = '';
+          this.filePath = '';
+        },
+        getFileSize(size) {
+          if (size < 1024) {
+            return `${size.toLocaleString()} B`;
+          }
+          if (size < 1024 * 1024) {
+            return `${Math.floor(size / 1024).toLocaleString()} KB`;
+          }
+          return `${Math.floor(size / (1024 * 1024)).toLocaleString()} MB`;
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
