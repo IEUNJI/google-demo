@@ -39,6 +39,13 @@
     .app-footer span {
       padding-right: 16px;
     }
+
+    .ok-btn {
+      position: fixed;
+      top: 70px;
+      left: 406px;
+      color: white !important;
+    }
   </style>
 </head>
 
@@ -56,8 +63,9 @@
           <p class="app-tips">尚未打开文件夹</p>
           <v-btn dark block tile outlined color="indigo" :loading="btnLoading" @click="btnClickHandler">打开文件夹</v-btn>
         </v-container>
-        <v-treeview v-else light dense hoverable activatable open-on-click transition return-object color="indigo"
-          :items="treeItems" :load-children="treeLoadHandler" @update:active="treeSelectHandler">
+        <v-treeview v-else light dense hoverable activatable selectable open-on-click transition return-object
+          color="indigo" :items="treeItems" :load-children="treeLoadHandler" @update:active="treeSelectHandler"
+          v-model="treeSelected">
           <template v-slot:prepend="{ item, open }">
             <v-icon v-if="!item.type">
               {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
@@ -83,6 +91,28 @@
           </span>
         </v-toolbar-title>
       </v-footer>
+      <v-btn light fab class="ok-btn" color="indigo" elevation="2" v-if="treeSelected.length > 0 && !dialog"
+        @click="okHandler">确定</v-btn>
+      <v-dialog v-model="dialog" scrollable max-width="800px">
+        <v-card>
+          <v-toolbar dark color="indigo">
+            <v-toolbar-title>选中的文件</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon dark @click="dialog = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-toolbar>
+          <v-divider></v-divider>
+          <v-card-text style="height: auto;">
+            <p style="margin-top: 16px;" v-for="item in treeSelected" :key="item.id">
+              <v-chip color="indigo" label outlined x-large>
+                <v-icon>mdi-file</v-icon>
+                <span>{{ item.name }}</span>
+              </v-chip>
+            </p>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
     </v-app>
   </div>
 
@@ -97,6 +127,7 @@
         treeVisible: false,
         btnLoading: false,
         treeItems: [],
+        treeSelected: [],
         fileTypeEnum: {
           'file': 'mdi-file-outline',
           'document': 'mdi-file-document-outline',
@@ -135,7 +166,8 @@
         fileName: '',
         fileSize: '',
         fileLastModifiedDate: '',
-        filePath: ''
+        filePath: '',
+        dialog: false
       },
       methods: {
         btnClickHandler() {
@@ -322,6 +354,9 @@
             return `${Math.floor(size / 1024).toLocaleString()} KB`;
           }
           return `${Math.floor(size / (1024 * 1024)).toLocaleString()} MB`;
+        },
+        okHandler() {
+          this.dialog = true;
         }
       }
     });
