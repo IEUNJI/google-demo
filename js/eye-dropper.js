@@ -12,6 +12,7 @@ class EyeDropperPage {
       .then(colorSelectionResult => {
         const { sRGBHex } = colorSelectionResult;
         this.bg.style.background = sRGBHex;
+        this.bg.innerHTML = `${sRGBHex} | ${this.bg.style.background}`;
       })
       .catch(error => {
 
