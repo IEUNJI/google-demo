@@ -11,12 +11,13 @@ class ChannelPage {
 
   sendHandler = () => {
     const text = this.textArea.value;
-    this.channelHandler({ data: text });
-    this.channel.postMessage(text);
+    const message = `${text} ${Date.now()}`;
+    this.channelHandler({ data: message });
+    this.channel.postMessage(message);
   }
 
   channelHandler = event => {
-    const log = `<p>${event.data}</p>`;
+    const log = `<p>${event.data} ${Date.now()}</p>`;
     this.logs.insertAdjacentHTML('afterbegin', log);
   }
 
